@@ -1,0 +1,67 @@
+### Testes HTTP - API Barbearia
+### Use com a extensao "REST Client" (VS Code) ou importe no Insomnia/Postman.
+### O Membro 5 deve estender este arquivo com Barbeiro, Servico e Agendamento.
+
+@base = http://localhost:5000
+
+### Metadados da API
+GET {{base}}/
+
+# =====================================================================
+#  CLIENTE (feito - Otavio)
+# =====================================================================
+
+### [201] Criar cliente
+POST {{base}}/clientes
+Content-Type: application/json
+
+{
+  "nome": "Joao da Silva",
+  "telefone": "11999998888",
+  "email": "joao@example.com"
+}
+
+### [200] Listar clientes (paginacao)
+GET {{base}}/clientes?page=1&per_page=10
+
+### [200] Listar clientes filtrando por nome
+GET {{base}}/clientes?nome=joao
+
+### [200] Detalhar cliente
+GET {{base}}/clientes/1
+
+### [404] Cliente inexistente
+GET {{base}}/clientes/9999
+
+### [200] Atualizacao completa (PUT)
+PUT {{base}}/clientes/1
+Content-Type: application/json
+
+{
+  "nome": "Joao da Silva Junior",
+  "telefone": "11988887777",
+  "email": "joao.junior@example.com"
+}
+
+### [200] Atualizacao parcial (PATCH)
+PATCH {{base}}/clientes/1
+Content-Type: application/json
+
+{
+  "telefone": "11900000000"
+}
+
+### [422] Payload invalido (nome curto e sem telefone)
+POST {{base}}/clientes
+Content-Type: application/json
+
+{
+  "nome": "A"
+}
+
+### [400] Corpo ausente / nao-JSON
+POST {{base}}/clientes
+Content-Type: application/json
+
+### [204] Remover cliente
+DELETE {{base}}/clientes/1

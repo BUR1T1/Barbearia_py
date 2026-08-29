@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Banco de dados / instance
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Variaveis de ambiente
+.env
+
+# Editores / SO
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
