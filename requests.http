@@ -7,6 +7,12 @@
 ### Metadados da API
 GET {{base}}/
 
+### Documentacao Swagger UI
+GET {{base}}/docs
+
+### Especificacao OpenAPI JSON
+GET {{base}}/openapi.json
+
 # =====================================================================
 #  CLIENTE (feito - Otavio)
 # =====================================================================
@@ -65,3 +71,67 @@ Content-Type: application/json
 
 ### [204] Remover cliente
 DELETE {{base}}/clientes/1
+
+# =====================================================================
+#  BARBEIRO (CRUD completo)
+# =====================================================================
+
+### [201] Criar barbeiro
+POST {{base}}/barbeiros
+Content-Type: application/json
+
+{
+  "nome": "Carlos Machado",
+  "especialidade": "Degradê e Barboterapia",
+  "telefone": "11977776666",
+  "ativo": true
+}
+
+### [200] Listar barbeiros (paginacao)
+GET {{base}}/barbeiros?page=1&per_page=10
+
+### [200] Listar barbeiros filtrando por nome
+GET {{base}}/barbeiros?nome=carlos
+
+### [200] Listar barbeiros filtrando por status ativo
+GET {{base}}/barbeiros?ativo=true
+
+### [200] Detalhar barbeiro
+GET {{base}}/barbeiros/1
+
+### [404] Barbeiro inexistente
+GET {{base}}/barbeiros/9999
+
+### [200] Atualizacao completa de barbeiro (PUT)
+PUT {{base}}/barbeiros/1
+Content-Type: application/json
+
+{
+  "nome": "Carlos Machado Silva",
+  "especialidade": "Corte Clássico e Barba",
+  "telefone": "11988889999",
+  "ativo": true
+}
+
+### [200] Atualizacao parcial de barbeiro (PATCH)
+PATCH {{base}}/barbeiros/1
+Content-Type: application/json
+
+{
+  "especialidade": "Visagismo e Barba"
+}
+
+### [422] Barbeiro payload invalido (nome em branco)
+POST {{base}}/barbeiros
+Content-Type: application/json
+
+{
+  "nome": "A"
+}
+
+### [400] Barbeiro filtro ativo com valor invalido
+GET {{base}}/barbeiros?ativo=invalido
+
+### [204] Remover barbeiro
+DELETE {{base}}/barbeiros/1
+

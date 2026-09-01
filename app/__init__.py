@@ -24,9 +24,12 @@ def criar_app():
 
     # Blueprints (uma entidade por membro do grupo)
     from app.routes.cliente_routes import cliente_bp
+    from app.routes.barbeiro_routes import barbeiro_bp
+    from app.routes.docs_routes import docs_bp
 
     app.register_blueprint(cliente_bp)
-    # TODO (Membro 2): app.register_blueprint(barbeiro_bp)
+    app.register_blueprint(barbeiro_bp)
+    app.register_blueprint(docs_bp)
     # TODO (Membro 3): app.register_blueprint(servico_bp)
     # TODO (Membro 4): app.register_blueprint(agendamento_bp)
 
@@ -36,7 +39,13 @@ def criar_app():
     @app.get("/")
     def inicio():
         return jsonify(
-            {"api": "Barbearia", "versao": "1.0.0", "recursos": ["/clientes"]}
+            {
+                "api": "Barbearia",
+                "versao": "1.0.0",
+                "docs": "/docs",
+                "openapi": "/openapi.json",
+                "recursos": ["/clientes", "/barbeiros"],
+            }
         )
 
     @app.cli.command("criar-banco")
