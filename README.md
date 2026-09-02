@@ -9,16 +9,16 @@ Trabalho da disciplina *Desenvolvimento de API RESTful com Flask* (2a Avaliacao 
 
 ## 1. Dominio e modelagem
 
-Dominio: **barbearia**. Modelo completo previsto:
+Dominio: **barbearia**. Modelo completo implementado:
 
 | Entidade        | Descricao                                          | Responsavel      |
 |-----------------|---------------------------------------------------|------------------|
 | **Cliente**     | Pessoas atendidas pela barbearia                  | Otavio (feito)   |
-| **Barbeiro**    | Profissionais que executam os servicos            | Membro 2 (TODO)  |
-| **Servico**     | Catalogo de servicos (corte, barba, etc.)         | Membro 3 (TODO)  |
-| **Agendamento** | Horario marcado; liga Cliente, Barbeiro e Servico | Membro 4 (TODO)  |
+| **Barbeiro**    | Profissionais que executam os servicos            | Membro 2 (feito) |
+| **Servico**     | Catalogo de servicos (corte, barba, etc.)         | Membro 3 (feito) |
+| **Agendamento** | Horario marcado; liga Cliente, Barbeiro e Servico | Membro 4 (feito) |
 
-### Relacionamentos previstos
+### Relacionamentos
 
 ```
 Cliente  1 ----- N  Agendamento  N ----- 1  Barbeiro
@@ -33,7 +33,7 @@ Cliente  1 ----- N  Agendamento  N ----- 1  Barbeiro
 - `Agendamento N:N Servico` - um agendamento pode ter varios servicos.
 
 As chaves estrangeiras (`ForeignKey`) e a integridade referencial ficam na
-entidade **Agendamento** (TODO do Membro 4).
+entidade **Agendamento**.
 
 ---
 
@@ -69,8 +69,9 @@ Banco de dados (SQLite)
 |-------------|-----------------------------------|
 | Framework   | Flask 3                           |
 | ORM         | Flask-SQLAlchemy                  |
-| Migrations  | Flask-Migrate                    |
-| Validacao   | Marshmallow                      |
+| Migrations  | Flask-Migrate                     |
+| Validacao   | Marshmallow                       |
+| Testes      | pytest                            |
 | Banco       | SQLite (padrao) / MySQL (opcional) |
 | Config      | python-dotenv                     |
 
@@ -86,16 +87,22 @@ Barbearia_py/
 │   ├── errors/
 │   │   ├── exceptions.py      # ErroAPI, NaoEncontrado
 │   │   └── handlers.py        # registrar_tratadores_de_erro()
-│   ├── models/
-│   │   └── cliente.py         # entidade Cliente
-│   ├── schemas/
-│   │   └── cliente_schema.py  # EsquemaCliente (validacao/serializacao)
-│   ├── services/
-│   │   └── cliente_service.py # regras de negocio de Cliente
-│   └── routes/
-│       └── cliente_routes.py  # endpoints REST de Cliente
+│   ├── models/                # cliente.py, barbeiro.py, servico.py, agendamento.py
+│   ├── schemas/               # *_schema.py (validacao/serializacao)
+│   ├── services/              # *_service.py (regras de negocio)
+│   └── routes/                # *_routes.py (endpoints REST)
+├── migrations/                # versionamento de schema (Flask-Migrate/Alembic)
+│   └── versions/              # 654ad4148b15_estrutura_inicial.py
+├── tests/                     # testes pytest
+│   ├── conftest.py            # fixtures (client, dados_base)
+│   ├── test_clientes.py
+│   ├── test_barbeiros.py
+│   ├── test_servicos.py
+│   └── test_agendamentos.py
+├── instance/                  # banco SQLite gerado (barbearia.db)
 ├── config.py                  # classe Configuracao (le o .env)
 ├── run.py                     # ponto de entrada
+├── pytest.ini                 # configuracao do pytest (pythonpath)
 ├── requests.http              # testes HTTP
 ├── requirements.txt
 ├── .env.example
@@ -110,19 +117,19 @@ Pre-requisito: Python 3.11+
 
 ```bash
 # 1. Ambiente virtual
-python -m venv .venv
-.venv\Scripts\Activate.ps1        # Windows (PowerShell)
-# source .venv/bin/activate         # Linux/Mac
+python -m venv venv
+source venv/bin/activate            # Linux/Mac
+# .venv\Scripts\Activate.ps1        # Windows (PowerShell)
 
 # 2. Dependencias
 pip install -r requirements.txt
 
 # 3. Variaveis de ambiente
-copy .env.example .env             # Windows  (cp no Linux/Mac)
+cp .env.example .env                # Linux/Mac (copy no Windows)
 
-# 4. Criar as tabelas
-flask --app run.py criar-banco
-#   Para aplicar migrations versionadas: flask --app run.py db upgrade
+# 4. Criar o schema via migrations versionadas
+flask --app run.py db upgrade
+#   Alternativa rapida sem migrations: flask --app run.py criar-banco
 
 # 5. Subir a API
 flask --app run.py run
@@ -130,30 +137,34 @@ flask --app run.py run
 ```
 
 Teste rapido: `curl http://localhost:5000/clientes` ou abra `requests.http` no VS Code.
+Documentacao interativa: `http://localhost:5000/docs` (Swagger UI).
 
 ---
 
-## 5. Endpoints implementados (Cliente)
+## 5. Endpoints
 
-Base: `/clientes`
+Todas as entidades seguem o mesmo padrao REST. Base de cada uma:
+`/clientes`, `/barbeiros`, `/servicos`, `/agendamentos`.
 
-| Metodo | Rota             | Descricao                       | Sucesso |
-|--------|------------------|---------------------------------|---------|
-| GET    | `/clientes`      | Lista com filtros e paginacao   | 200     |
-| GET    | `/clientes/<id>` | Detalha um cliente              | 200     |
-| POST   | `/clientes`      | Cria um cliente                 | 201     |
-| PUT    | `/clientes/<id>` | Atualizacao completa            | 200     |
-| PATCH  | `/clientes/<id>` | Atualizacao parcial             | 200     |
-| DELETE | `/clientes/<id>` | Remove um cliente               | 204     |
+| Metodo | Rota              | Descricao                       | Sucesso |
+|--------|-------------------|---------------------------------|---------|
+| GET    | `/<recurso>`      | Lista com filtros e paginacao   | 200     |
+| GET    | `/<recurso>/<id>` | Detalha um registro             | 200     |
+| POST   | `/<recurso>`      | Cria um registro                | 201     |
+| PUT    | `/<recurso>/<id>` | Atualizacao completa            | 200     |
+| PATCH  | `/<recurso>/<id>` | Atualizacao parcial             | 200     |
+| DELETE | `/<recurso>/<id>` | Remove um registro              | 204     |
 
-### Filtros e paginacao (GET `/clientes`)
+### Filtros por entidade
 
-| Parametro  | Exemplo              | Efeito                              |
-|------------|----------------------|-------------------------------------|
-| `nome`     | `?nome=joao`         | Busca parcial por nome              |
-| `email`    | `?email=example.com` | Busca parcial por email             |
-| `page`     | `?page=2`            | Pagina (default 1)                  |
-| `per_page` | `?per_page=20`       | Itens por pagina (default 10, max 100) |
+| Entidade      | Filtros disponiveis                          |
+|---------------|----------------------------------------------|
+| Cliente       | `nome`, `email`                              |
+| Barbeiro      | `nome`, `ativo`                              |
+| Servico       | `nome`, `preco_min`, `preco_max`             |
+| Agendamento   | `cliente_id`, `barbeiro_id`, `status`        |
+
+Paginacao (todas): `page` (default 1) e `per_page` (default 10, max 100).
 
 Resposta da listagem:
 
@@ -170,14 +181,15 @@ Resposta da listagem:
 ### Exemplos
 
 ```bash
-# Criar (201)
+# Criar cliente (201)
 curl -X POST http://localhost:5000/clientes \
   -H "Content-Type: application/json" \
   -d '{"nome":"Joao da Silva","telefone":"11999998888","email":"joao@example.com"}'
 
-# Atualizacao parcial (200)
-curl -X PATCH http://localhost:5000/clientes/1 \
-  -H "Content-Type: application/json" -d '{"telefone":"11900000000"}'
+# Criar agendamento ligando cliente + barbeiro + servicos (201)
+curl -X POST http://localhost:5000/agendamentos \
+  -H "Content-Type: application/json" \
+  -d '{"data_hora":"2026-09-03T14:30:00","cliente_id":1,"barbeiro_id":1,"servico_ids":[1]}'
 
 # Remover (204)
 curl -X DELETE http://localhost:5000/clientes/1
@@ -214,116 +226,109 @@ Erros de validacao incluem `detalhes`:
 
 ---
 
-## 7. Divisao de tarefas
+## 7. Migrations (Flask-Migrate)
+
+O schema e versionado com Flask-Migrate (Alembic). A pasta `migrations/` ja esta
+no repositorio, com a versao inicial em
+`migrations/versions/654ad4148b15_estrutura_inicial.py`.
+
+```bash
+# Aplicar as migrations e criar o schema (uso normal)
+flask --app run.py db upgrade
+
+# Gerar uma nova migration apos alterar os models
+flask --app run.py db migrate -m "descricao da mudanca"
+flask --app run.py db upgrade
+```
+
+> `flask db init` so e necessario uma vez, ao criar o projeto. Como a pasta
+> `migrations/` ja existe, rodar `db init` de novo retorna erro (esperado) -
+> use direto o `db upgrade`.
+
+---
+
+## 8. Testes (pytest)
+
+Os testes cobrem o CRUD feliz de cada entidade e os casos de erro 404 e 422,
+alem do fluxo de relacionamentos do agendamento (cliente + barbeiro + servicos).
+
+A raiz do projeto tem um `pytest.ini` que adiciona o diretorio ao `PYTHONPATH`,
+para que `from app import criar_app` funcione ao rodar `pytest` de qualquer
+terminal, sem precisar exportar variavel manualmente:
+
+```ini
+[pytest]
+pythonpath = .
+testpaths = tests
+```
+
+Rodar a suite:
+
+```bash
+pytest
+```
+
+Saida esperada:
+
+```
+tests/test_agendamentos.py ..
+tests/test_barbeiros.py .....
+tests/test_clientes.py .....
+tests/test_servicos.py .....
+
+17 passed
+```
+
+Os testes usam um banco SQLite temporario por execucao (fixture `client` em
+`tests/conftest.py`), sem tocar no `instance/barbearia.db` de desenvolvimento.
+
+---
+
+## 9. Divisao de tarefas
 
 ### Feito - Otavio
-
-- Estrutura do projeto e fabrica da aplicacao (`criar_app`), configuracao via
-  `.env` (`config.py`).
+- Estrutura do projeto e fabrica da aplicacao (`criar_app`), config via `.env`.
 - Integracao de Flask-SQLAlchemy e Flask-Migrate (`app/extensions.py`).
 - Camada de erros global (`app/errors/`): `ErroAPI` / `NaoEncontrado` +
   `registrar_tratadores_de_erro`, cobrindo 400 / 404 / 422 / 500.
-- Entidade **Cliente** completa, servindo de **modelo de referencia**:
-  `model` + `schema` + `service` + `routes` (Blueprint).
-- CRUD completo de Cliente (GET lista, GET id, POST, PUT, PATCH, DELETE) com
-  status codes semanticos, **paginacao** e **filtros** (`nome`, `email`).
-- Comando `flask criar-banco`, arquivo `requests.http` e este README.
+- Entidade **Cliente** completa (model + schema + service + routes), servindo de
+  modelo de referencia, com paginacao e filtros.
+- Comando `flask criar-banco`, base do `requests.http` e do README.
 
-> Padrao a seguir: cada nova entidade replica os 4 arquivos de Cliente
-> (`models/X.py`, `schemas/X_schema.py`, `services/X_service.py`,
-> `routes/X_routes.py`), registra o blueprint em `app/__init__.py` e importa o
-> model em `app/models/__init__.py`.
+### Feito - Membro 2: entidade **Barbeiro**
+- CRUD completo (6 verbos), paginacao e filtros por `nome` e `ativo`.
+- 404 para id inexistente, 422 para payload invalido.
 
----
+### Feito - Membro 3: entidade **Servico**
+- CRUD completo, validacao de `preco` positivo e `duracao_min` positivo.
+- Filtros `nome`, `preco_min`, `preco_max`; 422 quando `preco` <= 0.
 
-### TODO - Membro 2: entidade **Barbeiro** (CRUD completo)
+### Feito - Membro 4: entidade **Agendamento** + relacionamentos
+- Model com FKs para Cliente e Barbeiro e N:N com Servico via
+  `agendamento_servicos`.
+- Validacao de existencia de cliente, barbeiro e servicos antes de criar/atualizar
+  (422 quando referencia nao existe).
+- `GET /agendamentos/<id>` retorna os dados relacionados aninhados.
 
-Seguir o padrao de Cliente:
-
-- **Model** `app/models/barbeiro.py` - campos: `id`, `nome` (obrigatorio),
-  `especialidade` (str), `telefone` (str), `ativo` (bool, default `True`).
-- **Esquema** `app/schemas/barbeiro_schema.py` com validacoes de tamanho/tipo.
-- **Servico** `app/services/barbeiro_service.py` - CRUD + paginacao + filtro por
-  `nome` e por `ativo`.
-- **Rotas** `app/routes/barbeiro_routes.py` - blueprint `/barbeiros` com os 6
-  verbos (GET lista, GET id, POST 201, PUT 200, PATCH 200, DELETE 204).
-- Registrar o blueprint em `app/__init__.py` e importar o model em
-  `app/models/__init__.py`. Adicionar os testes de `/barbeiros` no `requests.http`.
-
-**Pronto quando:** os 6 verbos funcionam, 404 para id inexistente, 422 para
-payload invalido.
+### Feito - Membro 5: Flask-Migrate + testes + documentacao
+- Migrations versionadas em `migrations/` (`db upgrade` cria todo o schema).
+- Suite `pytest` com CRUD feliz de cada entidade + casos 404 e 422
+  (**17 testes passando**), `pytest` no `requirements.txt` e `pytest.ini` para
+  resolver o `PYTHONPATH`.
+- `requests.http` completo cobrindo todos os endpoints e status codes
+  (200 / 201 / 204 / 400 / 404 / 422).
+- README atualizado com as instrucoes de migrations e testes.
 
 ---
 
-### TODO - Membro 3: entidade **Servico** (CRUD completo)
-
-Seguir o padrao de Cliente:
-
-- **Model** `app/models/servico.py` - campos: `id`, `nome` (obrigatorio),
-  `descricao` (str), `preco` (`db.Numeric(10, 2)`, obrigatorio, > 0),
-  `duracao_min` (int, > 0).
-- **Esquema** `app/schemas/servico_schema.py` - validar `preco` positivo
-  (`validate.Range(min=0.01)`) e `duracao_min` positivo.
-- **Servico** `app/services/servico_service.py` - CRUD + paginacao + filtros
-  `nome`, `preco_min`, `preco_max`.
-- **Rotas** `app/routes/servico_routes.py` - blueprint `/servicos` com os 6 verbos.
-- Registrar blueprint + importar model. Adicionar testes de `/servicos` no
-  `requests.http`.
-
-**Pronto quando:** CRUD completo, 422 quando `preco` <= 0, filtro de faixa de
-preco funcionando.
-
----
-
-### TODO - Membro 4: entidade **Agendamento** + relacionamentos
-
-Esta entidade amarra o modelo relacional (FK + integridade referencial).
-
-- **Model** `app/models/agendamento.py`:
-  - `id`, `data_hora` (datetime, obrigatorio), `status` (str: `agendado` /
-    `concluido` / `cancelado`, default `agendado`), `observacao` (str, opcional).
-  - `cliente_id = db.Column(db.Integer, db.ForeignKey("clientes.id"), nullable=False)`
-  - `barbeiro_id = db.Column(db.Integer, db.ForeignKey("barbeiros.id"), nullable=False)`
-  - N:N com `Servico` via tabela associativa `agendamento_servicos`.
-  - `relationship` para `cliente`, `barbeiro` e `servicos`.
-- Adicionar o lado inverso em `Cliente` e `Barbeiro` (ha um comentario pronto
-  indicando o local em `app/models/cliente.py`).
-- **Esquema** `app/schemas/agendamento_schema.py` - validar `cliente_id`,
-  `barbeiro_id` e a lista `servico_ids`.
-- **Servico** `app/services/agendamento_service.py` - CRUD + paginacao + filtros
-  (`cliente_id`, `barbeiro_id`, `status`). Antes de criar/atualizar, **conferir
-  que cliente, barbeiro e servicos existem**; se nao, `422` (usar `ErroAPI` com
-  status 422). Retornar o agendamento com os dados relacionados aninhados.
-- **Rotas** `app/routes/agendamento_routes.py` - blueprint `/agendamentos`, 6 verbos.
-- Registrar blueprint + importar model. Adicionar testes de `/agendamentos` no
-  `requests.http`.
-
-**Pronto quando:** da para criar um agendamento ligando 1 cliente, 1 barbeiro e
-1+ servicos; `GET /agendamentos/<id>` mostra os dados relacionados.
-
----
-
-### TODO - Membro 5: Flask-Migrate + testes + documentacao
-
-- Inicializar as **migrations**: `flask --app run.py db init`, depois
-  `db migrate -m "estrutura inicial"` e `db upgrade`. Versionar a pasta
-  `migrations/` no repositorio.
-- Completar o `requests.http` (ou entregar colecao Postman/Insomnia) cobrindo
-  todos os endpoints e todos os status codes (200/201/204/400/404/422).
-- Escrever testes com **pytest** em `tests/` (CRUD feliz de cada entidade + casos
-  404 e 422). Adicionar `pytest` ao `requirements.txt`.
-- Opcional: script de `seed` para popular o banco.
-- Atualizar este README com as instrucoes finais de migrations e testes.
-
-**Pronto quando:** `flask db upgrade` cria todo o schema, `pytest` passa e a
-colecao HTTP cobre todos os endpoints.
-
----
-
-## 8. Defesa de codigo - pontos para dominar
+## 10. Defesa de codigo - pontos para dominar
 
 - Fluxo `requisicao -> rota -> esquema -> servico -> model -> banco`.
 - Como o Marshmallow gera o `422` e onde ele e capturado (`app/errors/handlers.py`).
 - Diferenca entre `PUT` (payload completo) e `PATCH` (`partial=True`, campos opcionais).
 - Como as `ForeignKey` e o relacionamento N:N sao declarados no `Agendamento`.
 - Por que a configuracao vem do `.env` e nao do codigo.
+- Por que existe o `pytest.ini`: sem ele, `pytest` nao encontra o pacote `app`
+  (a raiz do projeto nao entra no `sys.path` automaticamente).
+- Diferenca entre `db upgrade` (aplica migrations versionadas) e `criar-banco`
+  (cria as tabelas direto, sem versionamento).
