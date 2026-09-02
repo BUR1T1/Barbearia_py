@@ -25,12 +25,13 @@ def criar_app():
     # Blueprints (uma entidade por membro do grupo)
     from app.routes.cliente_routes import cliente_bp
     from app.routes.barbeiro_routes import barbeiro_bp
+    from app.routes.servico_routes import servico_bp
     from app.routes.docs_routes import docs_bp
 
     app.register_blueprint(cliente_bp)
     app.register_blueprint(barbeiro_bp)
+    app.register_blueprint(servico_bp)
     app.register_blueprint(docs_bp)
-    # TODO (Membro 3): app.register_blueprint(servico_bp)
     # TODO (Membro 4): app.register_blueprint(agendamento_bp)
 
     # Tratamento global de erros -> respostas JSON padronizadas
@@ -44,7 +45,7 @@ def criar_app():
                 "versao": "1.0.0",
                 "docs": "/docs",
                 "openapi": "/openapi.json",
-                "recursos": ["/clientes", "/barbeiros"],
+                "recursos": ["/clientes", "/barbeiros", "/servicos"],
             }
         )
 
