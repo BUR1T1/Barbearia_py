@@ -122,7 +122,7 @@ copy .env.example .env             # Windows  (cp no Linux/Mac)
 
 # 4. Criar as tabelas
 flask --app run.py criar-banco
-#   (quando as migrations estiverem prontas - TODO Membro 5 - usar: flask --app run.py db upgrade)
+#   Para aplicar migrations versionadas: flask --app run.py db upgrade
 
 # 5. Subir a API
 flask --app run.py run

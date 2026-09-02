@@ -9,9 +9,11 @@ from app.extensions import db, migrate
 from app.errors.handlers import registrar_tratadores_de_erro
 
 
-def criar_app():
+def criar_app(config_overrides=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(Configuracao)
+    if config_overrides:
+        app.config.update(config_overrides)
 
     os.makedirs(app.instance_path, exist_ok=True)
 
@@ -26,13 +28,14 @@ def criar_app():
     from app.routes.cliente_routes import cliente_bp
     from app.routes.barbeiro_routes import barbeiro_bp
     from app.routes.servico_routes import servico_bp
+    from app.routes.agendamento_routes import agendamento_bp
     from app.routes.docs_routes import docs_bp
 
     app.register_blueprint(cliente_bp)
     app.register_blueprint(barbeiro_bp)
     app.register_blueprint(servico_bp)
+    app.register_blueprint(agendamento_bp)
     app.register_blueprint(docs_bp)
-    # TODO (Membro 4): app.register_blueprint(agendamento_bp)
 
     # Tratamento global de erros -> respostas JSON padronizadas
     registrar_tratadores_de_erro(app)
@@ -45,7 +48,7 @@ def criar_app():
                 "versao": "1.0.0",
                 "docs": "/docs",
                 "openapi": "/openapi.json",
-                "recursos": ["/clientes", "/barbeiros", "/servicos"],
+                "recursos": ["/clientes", "/barbeiros", "/servicos", "/agendamentos"],
             }
         )
 

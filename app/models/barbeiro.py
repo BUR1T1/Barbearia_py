@@ -12,10 +12,9 @@ class Barbeiro(db.Model):
     telefone = db.Column(db.String(20), nullable=True)
     ativo = db.Column(db.Boolean, nullable=False, default=True)
 
-    # Relacionamento 1:N com Agendamento -> a TODO do Membro 4 adiciona aqui:
-    # agendamentos = db.relationship(
-    #     "Agendamento", back_populates="barbeiro", cascade="all, delete-orphan"
-    # )
+    agendamentos = db.relationship(
+        "Agendamento", back_populates="barbeiro", cascade="all, delete-orphan"
+    )
 
     def __repr__(self):
         return f"<Barbeiro {self.id} {self.nome!r}>"

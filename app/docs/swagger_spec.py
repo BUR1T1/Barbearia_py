@@ -794,3 +794,32 @@ OPENAPI_SPEC = {
         }
     }
 }
+
+# Complementa a especificacao com o recurso relacional implementado.
+OPENAPI_SPEC["tags"].append({"name": "Agendamentos", "description": "Horarios e relacionamentos da barbearia"})
+OPENAPI_SPEC["components"]["schemas"].update({
+    "AgendamentoInput": {
+        "type": "object",
+        "required": ["data_hora", "cliente_id", "barbeiro_id", "servico_ids"],
+        "properties": {
+            "data_hora": {"type": "string", "format": "date-time"},
+            "status": {"type": "string", "enum": ["agendado", "concluido", "cancelado"]},
+            "observacao": {"type": "string", "maxLength": 255},
+            "cliente_id": {"type": "integer", "minimum": 1},
+            "barbeiro_id": {"type": "integer", "minimum": 1},
+            "servico_ids": {"type": "array", "minItems": 1, "items": {"type": "integer", "minimum": 1}},
+        },
+    }
+})
+OPENAPI_SPEC["paths"].update({
+    "/agendamentos": {
+        "get": {"tags": ["Agendamentos"], "summary": "Listar agendamentos", "responses": {"200": {"description": "Lista paginada"}}},
+        "post": {"tags": ["Agendamentos"], "summary": "Criar agendamento", "requestBody": {"required": True, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AgendamentoInput"}}}}, "responses": {"201": {"description": "Criado"}, "422": {"description": "Payload ou referencia invalida"}}},
+    },
+    "/agendamentos/{id}": {
+        "get": {"tags": ["Agendamentos"], "summary": "Detalhar agendamento", "responses": {"200": {"description": "Detalhado"}, "404": {"description": "Nao encontrado"}}},
+        "put": {"tags": ["Agendamentos"], "summary": "Substituir agendamento", "responses": {"200": {"description": "Atualizado"}}},
+        "patch": {"tags": ["Agendamentos"], "summary": "Atualizar agendamento", "responses": {"200": {"description": "Atualizado"}}},
+        "delete": {"tags": ["Agendamentos"], "summary": "Remover agendamento", "responses": {"204": {"description": "Removido"}}},
+    },
+})
