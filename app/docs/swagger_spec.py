@@ -12,7 +12,8 @@ OPENAPI_SPEC = {
     ],
     "tags": [
         {"name": "Clientes", "description": "Gerenciamento de clientes da barbearia"},
-        {"name": "Barbeiros", "description": "Gerenciamento de profissionais barbeiros"}
+        {"name": "Barbeiros", "description": "Gerenciamento de profissionais barbeiros"},
+        {"name": "Servicos", "description": "Catalogo de servicos oferecidos pela barbearia"}
     ],
     "paths": {
         "/clientes": {
@@ -425,6 +426,208 @@ OPENAPI_SPEC = {
                     "404": {"description": "Barbeiro não encontrado", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}}
                 }
             }
+        },
+        "/servicos": {
+            "get": {
+                "tags": ["Servicos"],
+                "summary": "Listar servicos",
+                "description": "Retorna uma lista paginada de servicos com filtros por nome e faixa de preco.",
+                "parameters": [
+                    {
+                        "name": "nome",
+                        "in": "query",
+                        "description": "Filtro parcial por nome",
+                        "required": False,
+                        "schema": {"type": "string", "example": "corte"}
+                    },
+                    {
+                        "name": "preco_min",
+                        "in": "query",
+                        "description": "Preco minimo (inclusivo)",
+                        "required": False,
+                        "schema": {"type": "number", "format": "double", "example": 30.00}
+                    },
+                    {
+                        "name": "preco_max",
+                        "in": "query",
+                        "description": "Preco maximo (inclusivo)",
+                        "required": False,
+                        "schema": {"type": "number", "format": "double", "example": 100.00}
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Número da página",
+                        "required": False,
+                        "schema": {"type": "integer", "default": 1}
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Itens por página",
+                        "required": False,
+                        "schema": {"type": "integer", "default": 10}
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de servicos recuperada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ServicoPaginacao"}
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Filtro de preco ou de paginação inválido",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ErroGenerico"}
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": ["Servicos"],
+                "summary": "Criar servico",
+                "description": "Cadastra um novo servico no catalogo.",
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/ServicoInput"}
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Servico cadastrado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Servico"}
+                            }
+                        }
+                    },
+                    "400": {"description": "JSON inválido", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}},
+                    "422": {"description": "Erro de validação no payload (ex.: preco <= 0)", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroValidacao"}}}}
+                }
+            }
+        },
+        "/servicos/{id}": {
+            "get": {
+                "tags": ["Servicos"],
+                "summary": "Detalhar servico",
+                "description": "Recupera os detalhes de um servico pelo ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": True,
+                        "description": "ID numérico do servico",
+                        "schema": {"type": "integer"}
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados do servico",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Servico"}
+                            }
+                        }
+                    },
+                    "404": {"description": "Servico não encontrado", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}}
+                }
+            },
+            "put": {
+                "tags": ["Servicos"],
+                "summary": "Substituir servico (PUT)",
+                "description": "Atualização integral dos dados do servico.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": True,
+                        "description": "ID do servico",
+                        "schema": {"type": "integer"}
+                    }
+                ],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/ServicoInput"}
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Servico atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Servico"}
+                            }
+                        }
+                    },
+                    "400": {"description": "JSON inválido", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}},
+                    "404": {"description": "Servico não encontrado", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}},
+                    "422": {"description": "Erro de validação", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroValidacao"}}}}
+                }
+            },
+            "patch": {
+                "tags": ["Servicos"],
+                "summary": "Atualizar parcialmente servico (PATCH)",
+                "description": "Atualiza campos específicos de um servico.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": True,
+                        "description": "ID do servico",
+                        "schema": {"type": "integer"}
+                    }
+                ],
+                "requestBody": {
+                    "required": True,
+                    "content": {
+                        "application/json": {
+                            "schema": {"$ref": "#/components/schemas/ServicoPatchInput"}
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Servico atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/Servico"}
+                            }
+                        }
+                    },
+                    "400": {"description": "Nenhum campo fornecido ou JSON inválido", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}},
+                    "404": {"description": "Servico não encontrado", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}},
+                    "422": {"description": "Erro de validação", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroValidacao"}}}}
+                }
+            },
+            "delete": {
+                "tags": ["Servicos"],
+                "summary": "Remover servico",
+                "description": "Exclui um servico da base de dados.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": True,
+                        "description": "ID do servico",
+                        "schema": {"type": "integer"}
+                    }
+                ],
+                "responses": {
+                    "204": {"description": "Servico removido com sucesso (sem corpo)"},
+                    "404": {"description": "Servico não encontrado", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ErroGenerico"}}}}
+                }
+            }
         }
     },
     "components": {
@@ -509,6 +712,53 @@ OPENAPI_SPEC = {
                     "dados": {
                         "type": "array",
                         "items": {"$ref": "#/components/schemas/Barbeiro"}
+                    },
+                    "paginacao": {
+                        "type": "object",
+                        "properties": {
+                            "pagina": {"type": "integer", "example": 1},
+                            "por_pagina": {"type": "integer", "example": 10},
+                            "total": {"type": "integer", "example": 1},
+                            "total_paginas": {"type": "integer", "example": 1}
+                        }
+                    }
+                }
+            },
+            "ServicoInput": {
+                "type": "object",
+                "required": ["nome", "preco"],
+                "properties": {
+                    "nome": {"type": "string", "minLength": 2, "maxLength": 120, "example": "Corte Masculino"},
+                    "descricao": {"type": "string", "maxLength": 255, "example": "Corte na tesoura e maquina com finalizacao"},
+                    "preco": {"type": "string", "format": "decimal", "minimum": 0.01, "example": "45.00"},
+                    "duracao_min": {"type": "integer", "minimum": 1, "example": 30}
+                }
+            },
+            "ServicoPatchInput": {
+                "type": "object",
+                "properties": {
+                    "nome": {"type": "string", "minLength": 2, "maxLength": 120, "example": "Corte Masculino Premium"},
+                    "descricao": {"type": "string", "maxLength": 255, "example": "Corte com lavagem e finalizacao"},
+                    "preco": {"type": "string", "format": "decimal", "minimum": 0.01, "example": "59.90"},
+                    "duracao_min": {"type": "integer", "minimum": 1, "example": 45}
+                }
+            },
+            "Servico": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "integer", "example": 1},
+                    "nome": {"type": "string", "example": "Corte Masculino"},
+                    "descricao": {"type": "string", "example": "Corte na tesoura e maquina com finalizacao"},
+                    "preco": {"type": "string", "format": "decimal", "example": "45.00"},
+                    "duracao_min": {"type": "integer", "example": 30}
+                }
+            },
+            "ServicoPaginacao": {
+                "type": "object",
+                "properties": {
+                    "dados": {
+                        "type": "array",
+                        "items": {"$ref": "#/components/schemas/Servico"}
                     },
                     "paginacao": {
                         "type": "object",

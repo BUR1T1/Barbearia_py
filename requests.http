@@ -135,3 +135,67 @@ GET {{base}}/barbeiros?ativo=invalido
 ### [204] Remover barbeiro
 DELETE {{base}}/barbeiros/1
 
+
+# =====================================================================
+#  SERVICO (CRUD completo)
+# =====================================================================
+
+### [201] Criar servico
+POST {{base}}/servicos
+Content-Type: application/json
+
+{
+  "nome": "Corte Masculino",
+  "descricao": "Corte na tesoura e maquina com finalizacao",
+  "preco": 45.00,
+  "duracao_min": 30
+}
+
+### [200] Listar servicos (paginacao)
+GET {{base}}/servicos?page=1&per_page=10
+
+### [200] Listar servicos filtrando por nome
+GET {{base}}/servicos?nome=corte
+
+### [200] Listar servicos filtrando por faixa de preco
+GET {{base}}/servicos?preco_min=30&preco_max=100
+
+### [200] Detalhar servico
+GET {{base}}/servicos/1
+
+### [404] Servico inexistente
+GET {{base}}/servicos/9999
+
+### [200] Atualizacao completa de servico (PUT)
+PUT {{base}}/servicos/1
+Content-Type: application/json
+
+{
+  "nome": "Corte Masculino Premium",
+  "descricao": "Corte com lavagem e finalizacao",
+  "preco": 59.90,
+  "duracao_min": 45
+}
+
+### [200] Atualizacao parcial de servico (PATCH)
+PATCH {{base}}/servicos/1
+Content-Type: application/json
+
+{
+  "preco": 65.00
+}
+
+### [422] Servico com preco invalido (menor ou igual a zero)
+POST {{base}}/servicos
+Content-Type: application/json
+
+{
+  "nome": "Barba",
+  "preco": 0
+}
+
+### [400] Servico filtro de preco com valor invalido
+GET {{base}}/servicos?preco_min=abc
+
+### [204] Remover servico
+DELETE {{base}}/servicos/1
